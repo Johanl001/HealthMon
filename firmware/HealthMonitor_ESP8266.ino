@@ -8,9 +8,9 @@
 #include "heartRate.h"   // SparkFun built-in BPM helper
 
 // ─── CONFIG ───────────────────────────────────────────
-const char* SSID     = "Dnitro";
-const char* PASSWORD = "15151515";
-const char* TS_API   = "HKBOHM0PNOUCZZRR";
+const char* SSID     = "";
+const char* PASSWORD = "";
+const char* TS_API   = "";
 const char* TS_URL   = "http://api.thingspeak.com/update";
 
 // ─── PINS ─────────────────────────────────────────────

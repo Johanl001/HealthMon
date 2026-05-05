@@ -7,9 +7,41 @@ import MetricCard from '@/components/MetricCard'
 import DetailPage from '@/components/DetailPage'
 import RecommendationsSection from '@/components/RecommendationsSection'
 import SettingsModal from '@/components/SettingsModal'
+import AIChatbot from '@/components/AIChatbot'
+
+// ─── NEWS2 Score Calculation ──────────────────────────────────────────────
+function calculateNEWS2(temp: number, pulse: number, spo2: number): { score: number } {
+  let score = 0
+
+  // Temperature
+  if (temp <= 35) score += 3
+  else if (temp <= 36) score += 1
+  else if (temp <= 38) score += 0
+  else if (temp <= 39) score += 1
+  else score += 2
+
+  // Pulse
+  if (pulse <= 40) score += 3
+  else if (pulse <= 50) score += 1
+  else if (pulse <= 90) score += 0
+  else if (pulse <= 110) score += 1
+  else if (pulse <= 130) score += 2
+  else score += 3
+
+  // SpO2 (skip if spo2 === 0)
+  if (spo2 > 0) {
+    if (spo2 >= 96) score += 0
+    else if (spo2 >= 94) score += 1
+    else if (spo2 >= 92) score += 2
+    else score += 3
+  }
+
+  return { score }
+}
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [newsScore, setNewsScore] = useState(0)
   const [hydrated, setHydrated] = useState(false)
   
   const [settings, setSettings] = useState({
@@ -126,6 +158,8 @@ export default function Home() {
         const bmi = calcWeight > 0 ? calcWeight / (heightMeters * heightMeters) : 0
 
         const health = evaluateHealth(temp, pulse, spo2, settings)
+        const { score } = calculateNEWS2(temp, pulse, spo2)
+        setNewsScore(score)
 
         setMetrics({
           temperature: temp,
@@ -159,7 +193,9 @@ export default function Home() {
     if (scenario === 'heartDisease') { t = 37.2; p = 105; s = 95; } // If disease is 'Heart', this will trigger CRITICAL
 
     const health = evaluateHealth(t, p, s, settings)
-    
+    const { score } = calculateNEWS2(t, p, s)
+    setNewsScore(score)
+
     setMetrics({
       temperature: t,
       pulse: p,
@@ -203,7 +239,7 @@ export default function Home() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Metrics Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               <MetricCard
                 title="Temperature"
                 value={metrics.temperature.toFixed(1)}
@@ -236,6 +272,13 @@ export default function Home() {
                 onClick={() => setActiveTab('spo2')}
                 className="cursor-pointer hover:scale-105 transition-transform"
               />
+              <MetricCard
+                title="NEWS2 Score"
+                value={newsScore}
+                unit="/20"
+                status={newsScore >= 7 ? 'high' : newsScore >= 3 ? 'warning' : 'normal'}
+                className=""
+              />
             </div>
 
             {/* Personalized Health Strategy Info Cards */}
@@ -245,6 +288,18 @@ export default function Home() {
               pulse={metrics.pulse}
               spo2={metrics.spo2}
               disease={settings.disease}
+            />
+
+            {/* AI Clinical Chatbot */}
+            <AIChatbot
+              vitals={{
+                temperature: metrics.temperature,
+                pulse: metrics.pulse,
+                spo2: metrics.spo2,
+                weight: metrics.weight,
+                status: metrics.status,
+                newsScore,
+              }}
             />
           </div>
         )}

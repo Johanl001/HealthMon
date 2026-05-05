@@ -11,11 +11,12 @@ Welcome to the **IoT Health Monitor**, an end-to-end medical telemetry solution.
 
 ## ✨ Key Features
 
-- **Real-Time Vitals Tracking**: Live monitoring of Temperature, Pulse Rate, Weight, and SpO2.
+- **Real-Time Vitals Tracking**: Live monitoring of Temperature, Pulse Rate, and SpO2.
+- **AI Clinical Chatbot**: Embedded assistant powered by Anthropic's Claude 3.5 Sonnet to provide instant triage advice based on live patient vitals.
+- **NEWS2 Scoring System**: Automatic calculation of the National Early Warning Score (NEWS2) to assess illness severity and guide medical response.
 - **Intelligent Frontend Health Engine**: Localized client-side evaluation of vitals with support for dynamic modifiers (Age and Pre-existing conditions).
 - **Clinical-Grade UI**: A beautiful, glassmorphism-styled dashboard using React, Tailwind CSS, and Shadcn UI.
 - **Hardware Agnostic**: Uses standard REST APIs (via ThingSpeak) to communicate between the hardware and the frontend.
-- **Trend Analysis**: 24-hour historical trend visualization using Recharts.
 
 ---
 
@@ -29,13 +30,11 @@ graph TD
     subgraph Hardware Node
         ESP[ESP8266 Microcontroller]
         DHT[DHT11 Temp Sensor]
-        HX[HX711 Load Cell]
         MAX[MAX30102 Pulse/SpO2]
         BUZ[Buzzer]
         LCD[I2C LCD Display]
         
         DHT -- Data --> ESP
-        HX -- Data --> ESP
         MAX -- Data --> ESP
         ESP -- Alerts --> BUZ
         ESP -- Local View --> LCD
@@ -74,15 +73,7 @@ To build the hardware component of this project, wire the sensors to the ESP8266
 | DATA      | D4 (GPIO2)          |
 | GND       | GND                 |
 
-### 2. HX711 (Weight / Load Cell)
-| HX711 Pin | ESP8266 NodeMCU Pin |
-|-----------|---------------------|
-| VCC       | 3V3                 |
-| SCK       | D5 (GPIO14)         |
-| DT        | D6 (GPIO12)         |
-| GND       | GND                 |
-
-### 3. MAX30102 (Pulse Oximeter & Heart Rate)
+### 2. MAX30102 (Pulse Oximeter & Heart Rate)
 *Note: Uses I2C Communication*
 | MAX30102 Pin | ESP8266 NodeMCU Pin |
 |--------------|---------------------|
@@ -91,7 +82,7 @@ To build the hardware component of this project, wire the sensors to the ESP8266
 | SDA          | D2 (GPIO4)          |
 | GND          | GND                 |
 
-### 4. LCD Display (16x2 with I2C Backpack)
+### 3. LCD Display (16x2 with I2C Backpack)
 | LCD I2C Pin | ESP8266 NodeMCU Pin |
 |-------------|---------------------|
 | VCC         | 5V (VIN)            |
@@ -99,7 +90,7 @@ To build the hardware component of this project, wire the sensors to the ESP8266
 | SDA         | D2 (GPIO4)          |
 | SCL         | D1 (GPIO5)          |
 
-### 5. Alert Buzzer
+### 4. Alert Buzzer
 | Buzzer Pin | ESP8266 NodeMCU Pin |
 |------------|---------------------|
 | Positive   | D7 (GPIO13)         |
@@ -112,7 +103,7 @@ To build the hardware component of this project, wire the sensors to the ESP8266
 ### Phase 1: Hardware Setup
 1. Assemble the circuit according to the tables above.
 2. Open `firmware/HealthMonitor_ESP8266.ino` in the Arduino IDE.
-3. Install required libraries: `ESP8266WiFi`, `DHT sensor library`, `HX711 Arduino Library`, `LiquidCrystal I2C`, and `SparkFun MAX3010x`.
+3. Install required libraries: `ESP8266WiFi`, `DHT sensor library`, `LiquidCrystal I2C`, and `SparkFun MAX3010x`.
 4. Update the WiFi credentials and ThingSpeak Write API Key in the code:
    ```cpp
    const char* SSID     = "YOUR_WIFI";
@@ -130,7 +121,11 @@ The frontend is built using Next.js and is located in the root of this repositor
    # or
    pnpm install
    ```
-2. Start the development server:
+2. Create a `.env.local` file in the root directory and add your Anthropic API key for the AI Chatbot:
+   ```env
+   ANTHROPIC_API_KEY=your_api_key_here
+   ```
+3. Start the development server:
    ```bash
    npm run dev
    ```
@@ -155,8 +150,15 @@ Because the Next.js application is located in the root directory, it is **100% r
 
 ## 🧠 Diagnostic Health Logic 
 
-The frontend dashboard doesn't just display numbers; it evaluates them in real-time.
+The frontend dashboard evaluates vitals using two parallel systems:
 
+**1. NEWS2 Scoring (National Early Warning Score):**
+- Calculates a clinical score (0-20) based on Temperature, Pulse, and SpO2.
+- **Score 0-2**: Normal/Low Risk
+- **Score 3-6**: Warning / Medium Risk
+- **Score 7+**: High Risk / Emergency
+
+**2. Direct Thresholds & Modifiers:**
 - **Temperature**: Warning (37.5°C - 39.0°C) | Critical (< 36.0°C or > 39.0°C)
 - **Pulse Rate**: Warning (100 - 120 bpm) | Critical (< 50 bpm or > 120 bpm)
 - **SpO2**: Critical (< 90%)

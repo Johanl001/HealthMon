@@ -12,7 +12,7 @@ Welcome to the **IoT Health Monitor**, an end-to-end medical telemetry solution.
 ## ✨ Key Features
 
 - **Real-Time Vitals Tracking**: Live monitoring of Temperature, Pulse Rate, and SpO2.
-- **AI Clinical Chatbot**: Embedded assistant powered by Anthropic's Claude 3.5 Sonnet to provide instant triage advice based on live patient vitals.
+- **AI Clinical Chatbot**: Embedded assistant powered by OpenRouter (e.g., Llama 3) to provide instant triage advice based on live patient vitals.
 - **NEWS2 Scoring System**: Automatic calculation of the National Early Warning Score (NEWS2) to assess illness severity and guide medical response.
 - **Intelligent Frontend Health Engine**: Localized client-side evaluation of vitals with support for dynamic modifiers (Age and Pre-existing conditions).
 - **Clinical-Grade UI**: A beautiful, glassmorphism-styled dashboard using React, Tailwind CSS, and Shadcn UI.
@@ -121,9 +121,9 @@ The frontend is built using Next.js and is located in the root of this repositor
    # or
    pnpm install
    ```
-2. Create a `.env.local` file in the root directory and add your Anthropic API key for the AI Chatbot:
+2. Create a `.env.local` file in the root directory and add your OpenRouter API key for the AI Chatbot:
    ```env
-   ANTHROPIC_API_KEY=your_api_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
    ```
 3. Start the development server:
    ```bash

@@ -58,7 +58,9 @@ export default function AIChatbot({ vitals }: { vitals: Vitals }) {
       const data = await res.json()
       const aiMessage: Message = {
         role: 'ai',
-        content: res.ok ? data.reply : 'Sorry, I encountered an error. Please try again.',
+        content: res.ok
+          ? data.reply
+          : (data.error ?? 'Sorry, I encountered an error. Please try again.'),
       }
       setMessages((prev) => [...prev, aiMessage])
     } catch {
